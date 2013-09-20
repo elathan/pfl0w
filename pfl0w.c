@@ -80,7 +80,7 @@ void packet_dump(const u_char *packet, int len)
     unsigned int i = 0;
     
     for (i = 0; i < len; i++)
-    	fprintf(stderr, "%02X ", (unsigned char)packet[i]);
+        fprintf(stderr, "%02X ", (unsigned char)packet[i]);
     
     fprintf(stderr, "\n");
 }
@@ -144,20 +144,20 @@ void udp_inspect(struct ip *iph, struct udphdr *udp)
 
 void tcp_inspect(struct ip *iph, struct tcphdr *tcp)
 {
-	if (tcp->th_flags == TH_SYN) {
-		struct pfl0w_process *p = malloc (sizeof *p);
-    	fprintf(stderr, "TCP [%d] (%s:%d - ", tcp->th_flags, inet_ntoa(iph->ip_src), ntohs(tcp->th_sport));
-    	fprintf(stderr, "%s:%d)\n", inet_ntoa(iph->ip_dst), ntohs(tcp->th_dport));
-
-		p->src = iph->ip_src.s_addr;
-		p->dst = iph->ip_dst.s_addr;
-		p->src_port = ntohs(tcp->th_sport);
-		p->dst_port = ntohs(tcp->th_dport);
-
-		int r = process_lookup(p);
-		fprintf(stderr, "Process pid: %d\n", r);
-		free(p);
-	}
+    if (tcp->th_flags == TH_SYN) {
+        struct pfl0w_process *p = malloc (sizeof *p);
+        fprintf(stderr, "TCP [%d] (%s:%d - ", tcp->th_flags, inet_ntoa(iph->ip_src), ntohs(tcp->th_sport));
+        fprintf(stderr, "%s:%d)\n", inet_ntoa(iph->ip_dst), ntohs(tcp->th_dport));
+        
+        p->src = iph->ip_src.s_addr;
+        p->dst = iph->ip_dst.s_addr;
+        p->src_port = ntohs(tcp->th_sport);
+        p->dst_port = ntohs(tcp->th_dport);
+        
+        int r = process_lookup(p);
+        fprintf(stderr, "Process pid: %d\n", r);
+        free(p);
+    }
 }
 
 void packet_process(struct pcap_pkthdr *hdr, const u_char *packet, unsigned int is3G)
@@ -194,75 +194,75 @@ void packet_process(struct pcap_pkthdr *hdr, const u_char *packet, unsigned int 
 }
 
 unsigned int read_tcp4(const char *filename, struct pfl0w_process *p) {
-	FILE *file;
-	char line[MAX_LINE];
-	char dummy_str[MAX_LINE];
-	int dummy_int;
-	char source[MAX_LINE], dest[MAX_LINE];
-	unsigned int src_ip, dst_ip;
-	unsigned int src_port, dst_port;
+    FILE *file;
+    char line[MAX_LINE];
+    char dummy_str[MAX_LINE];
+    int dummy_int;
+    char source[MAX_LINE], dest[MAX_LINE];
+    unsigned int src_ip, dst_ip;
+    unsigned int src_port, dst_port;
 
-	line[0] = '\0';
-  	file = fopen(filename, "r");
-	if (!file) {
-		fprintf(stderr, "Couldn't open file %s.", filename);
-	 	return 0;
-	}
-	
-	/* Headers.  */
-  	fgets(line, MAX_LINE, file);
+    line[0] = '\0';
+    file = fopen(filename, "r");
+    if (!file) {
+        fprintf(stderr, "Couldn't open file %s.", filename);
+        return 0;
+    }
+    
+    /* Headers.  */
+    fgets(line, MAX_LINE, file);
 
-	/* Actual record.  */		
-	while (fscanf(file, "%s %s %s %d %s %s %d %d %d %d %d %s %d %d %d %d %d\n", 
-				dummy_str, source, dest, &dummy_int, dummy_str, 
-				dummy_str, &dummy_int, &dummy_int, &dummy_int, 
-				&dummy_int, &dummy_int, dummy_str, 
-				&dummy_int, &dummy_int, &dummy_int, &dummy_int, &dummy_int) != EOF) {
+    /* Actual record.  */       
+    while (fscanf(file, "%s %s %s %d %s %s %d %d %d %d %d %s %d %d %d %d %d\n", 
+                dummy_str, source, dest, &dummy_int, dummy_str, 
+                dummy_str, &dummy_int, &dummy_int, &dummy_int, 
+                &dummy_int, &dummy_int, dummy_str, 
+                &dummy_int, &dummy_int, &dummy_int, &dummy_int, &dummy_int) != EOF) {
 
-		sscanf(source, "%x:%x", &src_ip, &src_port);	
-		sscanf(dest, "%x:%x", &dst_ip, &dst_port);	
+        sscanf(source, "%x:%x", &src_ip, &src_port);    
+        sscanf(dest, "%x:%x", &dst_ip, &dst_port);  
 
-		if (p->src == src_ip &&
-			p->dst == dst_ip  &&
-			p->src_port == src_port &&
-			p->dst_port == dst_port) {
-			fprintf(stderr, "%s:%s %s", filename, source, dest);
-			fclose(file);
-			return 1;
-		}
-	}
+        if (p->src == src_ip &&
+            p->dst == dst_ip  &&
+            p->src_port == src_port &&
+            p->dst_port == dst_port) {
+            fprintf(stderr, "%s:%s %s", filename, source, dest);
+            fclose(file);
+            return 1;
+        }
+    }
 
-	fclose(file);
+    fclose(file);
 
-	return 0; 
+    return 0; 
 }
 
 unsigned int process_lookup(struct pfl0w_process *p) {
-	DIR *proc_dir;
-	struct dirent *pid_dir;
-	char filename[64];
-	unsigned int pid = 0;
+    DIR *proc_dir;
+    struct dirent *pid_dir;
+    char filename[64];
+    unsigned int pid = 0;
 
-  	proc_dir = opendir("/proc");
+    proc_dir = opendir("/proc");
 
-	while ((pid_dir = readdir(proc_dir))) {
+    while ((pid_dir = readdir(proc_dir))) {
 
-  		if (!isdigit(pid_dir->d_name[0]))
-    		continue;
+        if (!isdigit(pid_dir->d_name[0]))
+            continue;
 
-		unsigned int pid = atoi(pid_dir->d_name);
+        unsigned int pid = atoi(pid_dir->d_name);
 
-		if (pid == 1) continue;  /* Screw init.  */
+        if (pid == 1) continue;  /* Screw init.  */
 
-		sprintf(filename, "/proc/%d/net/tcp", pid);
+        sprintf(filename, "/proc/%d/net/tcp", pid);
 
-		if(read_tcp4(filename, p) == 1) {
-			fprintf(stderr, "Found: %d\n", pid);
-		}
-	}
+        if(read_tcp4(filename, p) == 1) {
+            fprintf(stderr, "Found: %d\n", pid);
+        }
+    }
 
-	closedir(proc_dir);
-	return 0;
+    closedir(proc_dir);
+    return 0;
 }
 
 void run(char *device_name)
