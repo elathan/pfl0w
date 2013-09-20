@@ -237,6 +237,7 @@ unsigned int read_tcp4(const char *filename, struct pfl0w_process *p) {
     return 0; 
 }
 
+#ifdef __linux__
 unsigned int process_lookup(struct pfl0w_process *p) {
     DIR *proc_dir;
     struct dirent *pid_dir;
@@ -264,6 +265,13 @@ unsigned int process_lookup(struct pfl0w_process *p) {
     closedir(proc_dir);
     return 0;
 }
+#endif
+
+#ifdef __APPLE__
+unsigned int process_lookup(struct pfl0w_process *p) {
+    return 0;
+}
+#endif
 
 void run(char *device_name)
 {
